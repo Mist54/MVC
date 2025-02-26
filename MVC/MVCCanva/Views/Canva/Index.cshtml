@@ -1,0 +1,143 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex align-items-start">
+            <div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                <button class="nav-link active" id="v-pills-home-tab" data-bs-toggle="pill" data-bs-target="#v-pills-home" type="button" role="tab" aria-controls="v-pills-home" aria-selected="true">Text editor</button>
+                <button class="nav-link" id="v-pills-profile-tab" data-bs-toggle="pill" data-bs-target="#v-pills-profile" type="button" role="tab" aria-controls="v-pills-profile" aria-selected="false">Profile</button>
+                <button class="nav-link" id="v-pills-disabled-tab" data-bs-toggle="pill" data-bs-target="#v-pills-disabled" type="button" role="tab" aria-controls="v-pills-disabled" aria-selected="false" disabled>Disabled</button>
+                <button class="nav-link" id="v-pills-messages-tab" data-bs-toggle="pill" data-bs-target="#v-pills-messages" type="button" role="tab" aria-controls="v-pills-messages" aria-selected="false">Messages</button>
+                <button class="nav-link" id="v-pills-settings-tab" data-bs-toggle="pill" data-bs-target="#v-pills-settings" type="button" role="tab" aria-controls="v-pills-settings" aria-selected="false">Settings</button>
+            </div>
+            <div class="tab-content" id="v-pills-tabContent">
+                <div class="tab-pane fade show active" id="v-pills-home" role="tabpanel" aria-labelledby="v-pills-home-tab" tabindex="0">
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h5>Text Options</h5>
+                                    <input type="text" id="textInput" class="form-control mb-2" placeholder="Enter text" />
+                                    <select id="fontSelect" class="form-control mb-2">
+                                        <option value="Arial">Arial</option>
+                                        <option value="Times New Roman">Times New Roman</option>
+                                        <option value="Verdana">Verdana</option>
+                                        <option value="Georgia">Georgia</option>
+                                    </select>
+                                    <input type="color" id="textColor" class="form-control mb-2" />
+                                    <input type="number" id="fontSize" class="form-control mb-2" placeholder="Font Size" value="20" />
+                                    <input type="color" id="textBgColor" class="form-control mb-2" placeholder="background color"/>
+                                    <button onclick="addText()" class="btn btn-success">Add Text</button>
+                                    <button onclick="deleteSelected()" class="btn btn-danger">Delete</button>
+                                </div>
+                                <div class="col-md-9">
+                                    <div id="DivCanvas">
+                                        <canvas id="Canva" width="800" height="600" style="border:1px solid #ccc;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="tab-pane fade" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab" tabindex="0">Hello</div>
+                <div class="tab-pane fade" id="v-pills-disabled" role="tabpanel" aria-labelledby="v-pills-disabled-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="v-pills-messages" role="tabpanel" aria-labelledby="v-pills-messages-tab" tabindex="0">...</div>
+                <div class="tab-pane fade" id="v-pills-settings" role="tabpanel" aria-labelledby="v-pills-settings-tab" tabindex="0">...</div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+@section scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.6.0/fabric.min.js"></script>
+    <script>
+        var canvas = new fabric.Canvas('Canva');
+
+        window.onload = function () {
+            loadCanvas();
+        };
+
+
+        // Save canvas whenever an object is modified
+        canvas.on('object:modified', saveCanvas);
+        canvas.on('object:added', saveCanvas);
+        canvas.on('object:removed', saveCanvas);
+
+
+        // Function to add custom text to canvas
+        function addText() {
+            var userText = document.getElementById("textInput").value || "Sample Text";
+            var font = document.getElementById("fontSelect").value;
+            var color = document.getElementById("textColor").value;
+            var size = document.getElementById("fontSize").value || 20;
+
+            var text = new fabric.Text(userText, {
+                left: 100,
+                top: 100,
+                fontFamily: font,
+                fill: color,
+                fontSize: parseInt(size)
+            });
+
+            canvas.add(text);
+            canvas.setActiveObject(text);
+        }
+
+        // Function to delete selected object
+        function deleteSelected() {
+            var activeObject = canvas.getActiveObject();
+            if (activeObject) {
+                canvas.remove(activeObject);
+            }
+        }
+
+        // Function to update text properties dynamically
+        function updateTextProperties() {
+            var activeObj = canvas.getActiveObject();
+            if (activeObj && activeObj.type === 'text') {
+                activeObj.set({
+                    fontFamily: document.getElementById("fontSelect").value,
+                    fill: document.getElementById("textColor").value,
+                    fontSize: parseInt(document.getElementById("fontSize").value)
+                }); 
+                canvas.renderAll();
+            }
+        }
+
+        function changeTextBgColor() {
+            var obj = canvas.getActiveObject();
+            if (obj && obj.type === 'text') {
+                obj.set("backgroundColor", document.getElementById("textBgColor").value);
+                canvas.renderAll();
+            }
+        }
+
+        // Function to save canvas state to localStorage
+        function saveCanvas() {
+            var json = JSON.stringify(canvas);
+            localStorage.setItem("savedCanvas", json);
+        }
+
+        // Function to load canvas from localStorage
+        function loadCanvas() {
+            var json = localStorage.getItem("savedCanvas");
+            if (json) {
+                canvas.loadFromJSON(json, function () {
+                    canvas.renderAll();
+                });
+            }
+        }
+
+        // Event listeners to update active text properties dynamically
+        document.getElementById("fontSelect").addEventListener("change", updateTextProperties);
+        document.getElementById("textColor").addEventListener("input", updateTextProperties);
+        document.getElementById("fontSize").addEventListener("input", updateTextProperties);
+        document.getElementById("textBgColor").addEventListener("input", changeTextBgColor);
+    </script>
+}
